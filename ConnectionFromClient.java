@@ -49,19 +49,23 @@ public class ConnectionFromClient extends Thread {
     public void startRead() { //constantly reads incoming data until the client disconnects
         while (true) {
             try {
-                byte response = in.readByte();
+                int response = in.read();
                 if (response==-1) { // -1 means the connection is closed, otherwise it just reads nothing
-                    window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString() + " CLOSED");
-                    window.destroy();
-                    this.delete();
-                    window.log("CURRENT CONNECTIONS: "+Main.connections.size());
+                    closeConnection();
                     return;
                 } else { // if the response is a natural number, it means it's data from the client. Print the data received
                     window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString()+" RECEIVED: "+response);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                closeConnection();
+                return;
             }
         }
+    }
+    public void closeConnection() {
+        window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString() + " CLOSED");
+        window.destroy();
+        this.delete();
+        window.log("CURRENT CONNECTIONS: "+Main.connections.size());
     }
 }
