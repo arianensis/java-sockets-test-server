@@ -1,4 +1,5 @@
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 //import java.awt.event.ActionListener;
@@ -13,6 +14,7 @@ public class ConnectionFromClient extends Thread {
     final int id; // the id that will be assigned to the current object
     final Socket socket; // the socket which connects from the client
     DataInputStream in; // to receive data from client and/or know if it's still connected
+    DataOutputStream out; // to send data to client for read confirmation
     final ConnectionWindow window; // the window to show info about only this connection
 
     //final Timer periodicConnectionCkeck;
@@ -23,6 +25,7 @@ public class ConnectionFromClient extends Thread {
         this.id = ++nextId; // increments class variable for next id and assigns result to object id
         try {
             in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
         }
         // Create window
@@ -55,6 +58,8 @@ public class ConnectionFromClient extends Thread {
                     return;
                 } else { // if the response is a natural number, it means it's data from the client. Print the data received
                     window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString()+" RECEIVED: "+response);
+                    // answer with a 1 so the client can know the server received the message
+                    out.writeByte(1);
                 }
             } catch (IOException e) {
                 closeConnection();
