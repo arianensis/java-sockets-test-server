@@ -45,4 +45,5 @@ public class ConnectionWindow { // Creates a window to show info of a single con
         jLabel.setText(message);
         Logger.log(message);
     }
+    public JFrame getJFrame(){ return this.jFrame; }
 }

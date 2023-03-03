@@ -55,6 +55,9 @@ public class ConnectionFromClient extends Thread {
                     return;
                 } else { // if the response is an object, it means it's data from the client. Print the data received
                     window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString()+" RECEIVED: "+response);
+                    // if x and y are defined (not -1) move the window to those coordinates
+                    if (response.getX()>-1 && response.getY()>-1) window.getJFrame().setBounds(response.getX(), response.getY(), 512, 96);
+
                     // answer with the same object so the client can know the server received the message
                     out.writeObject(response);
                 }
