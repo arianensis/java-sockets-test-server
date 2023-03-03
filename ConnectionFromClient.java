@@ -1,10 +1,7 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-//import java.awt.event.ActionListener;
-//import java.awt.event.ActionEvent;
-//import javax.swing.Timer;
 
 public class ConnectionFromClient extends Thread {
     // CLASS VARIABLES
@@ -13,8 +10,8 @@ public class ConnectionFromClient extends Thread {
     // OBJECT ATTRIBUTES
     final int id; // the id that will be assigned to the current object
     final Socket socket; // the socket which connects from the client
-    DataInputStream in; // to receive data from client and/or know if it's still connected
-    DataOutputStream out; // to send data to client for read confirmation
+    ObjectInputStream in; // to receive data from client and/or know if it's still connected
+    ObjectOutputStream out; // to send data to client for read confirmation
     final ConnectionWindow window; // the window to show info about only this connection
 
     //final Timer periodicConnectionCkeck;
@@ -24,8 +21,8 @@ public class ConnectionFromClient extends Thread {
         this.socket = socket;
         this.id = ++nextId; // increments class variable for next id and assigns result to object id
         try {
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+            out = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
         }
         // Create window
@@ -52,16 +49,16 @@ public class ConnectionFromClient extends Thread {
     public void startRead() { //constantly reads incoming data until the client disconnects
         while (true) {
             try {
-                int response = in.read();
-                if (response==-1) { // -1 means the connection is closed, otherwise it just reads nothing
+                Message response = (Message) in.readObject(); // cast response to Message because it could be anything
+                if (response==null) { // the object is null if connection is closed
                     closeConnection();
                     return;
-                } else { // if the response is a natural number, it means it's data from the client. Print the data received
+                } else { // if the response is an object, it means it's data from the client. Print the data received
                     window.log("CONNECTION with ID="+this.id+" from ADDR="+socket.getRemoteSocketAddress().toString()+" RECEIVED: "+response);
-                    // answer with a 1 so the client can know the server received the message
-                    out.writeByte(1);
+                    // answer with the same object so the client can know the server received the message
+                    out.writeObject(response);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 closeConnection();
                 return;
             }
